@@ -15,11 +15,11 @@ const BOT_KNOWLEDGE: Record<Language, string> = {
     English: "I am your AI Chat Connect Chill. Explore the world of music in Purple!",
     Hindi: "मैं आपका एआई संगीत उस्ताद हूं। बैंगनी रंग में संगीत की दुनिया की खोज करें!",
     Kannada: "ನಾನು ನಿಮ್ಮ AI ಸಂಗೀತ ಮಾಂತ್ರಿಕ. ನೇರಳೆ ಬಣ್ಣದಲ್ಲಿ ಸಂಗೀತದ ಜಗತ್ತನ್ನು ಅನ್ವೇಷಿಸಿ!",
-    Marathi: "मी तुमचा मी संगीताचा जादुई मदतनीस आहे. जांभळ्या रंगात संगीताचे जग शोधा!",
+    Marathi: "मी तुमचा मी संगीताचा जादुई मदतनीस आहे. जांभळ्या ರಂಗಾತ್ ಸಂಗೀತಾಚೆ ಜಗ್ ಶೋಧಾ!",
     Tamil: "நான் உங்கள் AI சாட் கனெக்ட் சில். ஊதா நிறத்தில் இசை உலகை ஆராயுங்கள்!",
-    Telugu: "నేను మీ AI చాಟ್ కనెక్ಟ್ చిల్. ఊదా రంగులో సంగీత ప్రపంచాన్ని అನ್వేషించండి!",
-    Malayalam: "ഞാൻ നിങ്ങളുടെ AI ചാറ്റ് കണക്ട് ചില്ല് ആണ്. പർപ്പിൾ നിറത്തിൽ സംഗീറ്റ പര്യവേക്ഷണം നടത്തൂ!",
-    Punjabi: "ਮੈਂ ਤੁਹਾਡਾ ਏਆਈ ਮਿਊਜ਼ਿਕ ਉਸਤਾਦ ਹਾਂ। ਜਾਮਨੀ ਰੰਗ ਵਿੱਚ ਸੰਗੀਤ ਦੀ ਦੁਨੀਆ ਦੀ ਖੋਜ ਕਰੋ!",
+    Telugu: "నేను మీ AI చాట్ కనెక్ಟ್ చిಲ್. ఊదా రంగులో సంగీత ప్రపంచాన్ని ಅನ್ವೇಷಿಸಿ!",
+    Malayalam: "ഞാൻ നിങ്ങളുടെ AI ചാറ്റ് കണക്ട് ചില്ല് ആണ്. പർപ്പിൾ നിറത്തിൽ സംഗീത ലോകം പര്യവേಕ್ಷണം ചെയ്യുക!",
+    Punjabi: "ਮੈਂ ਤੁਹਾਡਾ ਏਆਈ ਮਿਊਜ਼ਿਕ ਉਸਤਾਦ ਹਾਂ। ਜਾਮਨੀ ರੰਗ ਵਿੱਚ ਸੰਗੀਤ ਦੀ ದੁನಿਆ ਦੀ ਖੋਜ ਕਰੋ!",
     Bengali: "আমি আপনার এআই মিউজিক ওস্তাদ। বেগুনি রঙে সঙ্গীতের জগত অন্বেষণ করুন!",
     Gujarati: "હું તમારો AI મ્યુઝિક ઉસ્તાદ છું. જાંબલી રંગમાં સંગીતની દુનિયા શોધો!"
 };
@@ -31,45 +31,85 @@ interface Song {
 
 interface ArtistEntry {
     name: string;
-    aliases: string[]; // Added aliases for better matching (including native scripts)
+    aliases: string[];
     songs: Song[];
 }
 
-const SEARCH_DATA_STRUCTURED: Record<string, ArtistEntry> = {
+const SEARCH_DATA_STRUCTURED: ArtistEntry[] = [
     // KANNADA - LEGENDS & STARS
-    'rajkumar': {
+    {
         name: "Dr. Rajkumar",
-        aliases: ['ರಾಜ್ಕುಮಾರ್', 'ಡಾ. ರಾಜ್ಕುಮಾರ್', 'ಅಣ್ಣಾವ್ರು', 'rajkumar', 'dr rajkumar'],
+        aliases: ['ರಾಜ್ಕುಮಾರ್', 'ಡಾ. ರಾಜ್ಕುಮಾರ್', 'ಅಣ್ಣಾವ್ರು', 'rajkumar', 'dr rajkumar', 'anaavru', 'raj kumar'],
         songs: [
             { name: "Huttidare Kannada Naadalli Huttabeku", theme: ["spirit", "happy"] },
             { name: "Nooru Kannu Saladu", theme: ["love", "classic"] },
             { name: "If You Come Today", theme: ["funny", "happy"] },
-            { name: "Ellili Nodali Chinnada", theme: ["love"] },
+            { name: "Ellelli Nodali Chinnada", theme: ["love"] },
             { name: "Yaaru Thiliyaru Ninna", theme: ["spiritual"] },
-            { name: "Naguva Nayana", theme: ["love"] }
+            { name: "Naguva Nayana", theme: ["love"] },
+            { name: "Onde Ondu Maatu", theme: ["love"] },
+            { name: "Aadisi Nodu", theme: ["philosophical"] }
         ]
     },
-    'puneeth rajkumar': {
+    {
+        name: "Dr. Vishnuvardhan",
+        aliases: ['ವಿಷ್ಣುವರ್ಧನ್', 'ಡಾ. ವಿಷ್ಣುವರ್ಧನ್', 'ಸಾಹಸ ಸಿಂಹ', 'vishnuvardhan', 'saahasa simha', 'vishnu'],
+        songs: [
+            { name: "Noorentu Nomeglallu", theme: ["love"] },
+            { name: "Haalu Jenu", theme: ["love"] },
+            { name: "Snehada Kadalalli", theme: ["love", "friendship"] },
+            { name: "Veenavaani", theme: ["classical"] }
+        ]
+    },
+    {
         name: "Puneeth Rajkumar",
         aliases: ['ಪುನೀತ್ ರಾಜ್ಕುಮಾರ್', 'ಅಪ್ಪು', 'appu', 'puneeth', 'power star'],
         songs: [
             { name: "Raajakumara", theme: ["love", "inspiration"] },
             { name: "Tagaru Banthu", theme: ["party", "energy"] },
             { name: "Bombe Helutaithe", theme: ["sad", "classic"] },
-            { name: "Appu Dance", theme: ["party"] }
+            { name: "Appu Dance", theme: ["party"] },
+            { name: "Neene Rajakumara", theme: ["love"] }
         ]
     },
-    'yash': {
+    {
+        name: "Shankar Nag",
+        aliases: ['ಶಂಕರ್ ನಾಗ್', 'shankar nag', 'karate raja'],
+        songs: [
+            { name: "Santoshakke", theme: ["party", "happy"] },
+            { name: "Jotheyali ಜೊತೆಯಲಿ", theme: ["love"] },
+            { name: "Namma Shaale", theme: ["nostalgia"] }
+        ]
+    },
+    {
         name: "Yash",
-        aliases: ['ಯಶ್', 'rocky bhai', 'kgf yash'],
+        aliases: ['ಯಶ್', 'rocky bhai', 'kgf yash', 'rocking star'],
         songs: [
             { name: "Salaam Rocky Bhai", theme: ["energy", "party"] },
             { name: "Mehabooba", theme: ["love"] },
-            { name: "Sulthana", theme: ["energy"] }
+            { name: "Sulthana", theme: ["energy"] },
+            { name: "Dheera Dheera", theme: ["energy"] }
+        ]
+    },
+    {
+        name: "P. B. Sreenivas",
+        aliases: ['ಪಿ ಬಿ ಶ್ರೀನಿವಾಸ್', 'p b sreenivas', 'pbs'],
+        songs: [
+            { name: "Aadisi Nodu", theme: ["philosophical"] },
+            { name: "Nooru Kannu Saladu", theme: ["love"] }
+        ]
+    },
+    {
+        name: "S. P. Balasubrahmanyam",
+        aliases: ['ಎಸ್ ಪಿ ಬಾಲಸುಬ್ರಹ್ಮಣ್ಯಂ', 'spb', 's p balasubrahmanyam'],
+        songs: [
+            { name: "Jotheyali", theme: ["love"] },
+            { name: "Maate Mantramu", theme: ["love"] },
+            { name: "Enna Satham", theme: ["love"] }
         ]
     },
     // HINDI
-    'arijit singh': {
+    {
         name: "Arijit Singh",
         aliases: ['अरिजीत सिंह', 'arijit'],
         songs: [
@@ -78,54 +118,26 @@ const SEARCH_DATA_STRUCTURED: Record<string, ArtistEntry> = {
             { name: "Nashe Si Chadh Gayi", theme: ["party"] }
         ]
     },
-    'kishore kumar': {
+    {
         name: "Kishore Kumar",
-        aliases: ['किशोर कुमार', 'kishore da'],
+        aliases: ['किशोर कुमार', 'kishore da', 'kishore kumar'],
         songs: [
             { name: "Hamen Tumse Pyar Kitna", theme: ["love"] },
             { name: "Zindagi Ek Safar", theme: ["happy"] },
-            { name: "O Mere Dil Ke Chain", theme: ["love"] }
-        ]
-    },
-    // TAMIL
-    'a r rahman': {
-        name: "A. R. Rahman",
-        aliases: ['ஏ ஆர் ரகுமான்', 'rahman', 'arr'],
-        songs: [
-            { name: "Jai Ho", theme: ["happy", "energy"] },
-            { name: "Kun Faya Kun", theme: ["sad", "spiritual"] },
-            { name: "Enna Sona", theme: ["love"] }
-        ]
-    },
-    'rajinikanth': {
-        name: "Rajinikanth",
-        aliases: ['ರಜಿನಿಕಾಂತ್', 'ரஜினிகாந்த்', 'thalaivar', 'superstar'],
-        songs: [
-            { name: "Marana Mass", theme: ["party", "energy"] },
-            { name: "Chumma Kizhi", theme: ["party"] }
-        ]
-    },
-    // TELUGU
-    'sid sriram': {
-        name: "Sid Sriram",
-        aliases: ['సిద్ శ్రీరాம்', 'sid sriram'],
-        songs: [
-            { name: "Samajavaragamana", theme: ["love"] },
-            { name: "Srivalli", theme: ["love"] },
-            { name: "Kannaana Kanney", theme: ["love", "sad"] }
+            { name: "Aaj Ei Dintake", theme: ["happy"] }
         ]
     },
     // PUNJABI
-    'diljit dosanjh': {
+    {
         name: "Diljit Dosanjh",
-        aliases: ['ਦਿਲਜੀਤ ਦੋਸਾਂਝ', 'diljit'],
+        aliases: ['ਦਿਲਜੀਤ ਦੋਸਾਂਝ', 'diljit', 'dosanjh'],
         songs: [
             { name: "Proper Patola", theme: ["party"] },
             { name: "Lover", theme: ["love"] },
             { name: "G.O.A.T.", theme: ["rap"] }
         ]
     },
-    'sidhu moose wala': {
+    {
         name: "Sidhu Moose Wala",
         aliases: ['ਸਿੱਧੂ ਮੂਸੇ ਵਾਲਾ', 'sidhu', 'moosewala'],
         songs: [
@@ -134,14 +146,14 @@ const SEARCH_DATA_STRUCTURED: Record<string, ArtistEntry> = {
             { name: "Levels", theme: ["rap"] }
         ]
     }
-};
+];
 
 const THEME_DATA: Record<string, Record<Language, string>> = {
     love: {
         English: "💖 Love & Romantic Anthems:\n1. 'Perfect' - Ed Sheeran\n2. 'All of Me' - John Legend",
         Hindi: "💖 रोमांटिक नगमे:\n1. 'Tum Hi Ho' - Arijit Singh\n2. 'Lag Jaa Gale' - Lata Mangeshkar",
-        Kannada: "💖 ಪ್ರೇಮ ಗೀತೆಗಳು:\n1. 'ಬೆಳಗೆದ್ದು' - ಕಿರಿಕ್ ಪಾರ್ಟಿ\n2. 'ನೀನೇ ರಾಜಕುಮಾರ'",
-        Marathi: "💖 प्रेमगीते:\n1. 'झिंगाટ' (Love edit)\n2. 'दिवा तुझे किती'",
+        Kannada: "💖 ಪ್ರೇಮ ಗೀತೆಗಳು:\n1. 'ಬೆಳಗೆದ್ದು' - ಕಿರಿಕ್ ಪಾರ್ಟಿ\n2. 'ನೀನೇ ರಾಜಕುಮಾರ' - ಪುನೀತ್ ರಾಜಕುಮಾರ್",
+        Marathi: "💖 प्रेमगीते:\n1. 'झिंगಾಟ್' (Love edit)\n2. 'ದಿವ ತುಝೆ ಕಿತಿ'",
         Tamil: "💖 காதல் பாடல்கள்:\n1. 'கண்ணான கண்ணே'\n2. 'முன்பே வா'",
         Telugu: "💖 ప్రేమ గీతాలు:\n1. 'సమాజవరగమన'\n2. 'ఇంకేం ఇంకేం'",
         Malayalam: "💖 പ്രണയ ഗാനങ്ങൾ:\n1. 'മലരേ'\n2. 'ഉയിരേ'",
@@ -153,7 +165,7 @@ const THEME_DATA: Record<string, Record<Language, string>> = {
         English: "💧 Soul-Stirring Sad Songs:\n1. 'Someone Like You' - Adele\n2. 'Fix You' - Coldplay",
         Hindi: "💧 दर्द भरे नगमे:\n1. 'Channa Mereya' - Arjit Singh\n2. 'Agar Tum Saath Ho'",
         Kannada: "💧 ವಿಷಾದದ ಗೀತೆಗಳು:\n1. 'ಅನಿಸುತಿದೆ' - ಮುಂಗಾರು ಮಳೆ",
-        Marathi: "💧 दुःखद गाणी:\n1. 'येळकोट' - सैराट",
+        Marathi: "💧 दुःखದ ಗಾಪಿ:\n1. 'येಳಕೋಟ್' - ಸೈರಾಟ್",
         Tamil: "💧 சோகமான பாடல்கள்:\n1. 'ஏனோ ஏனோ'\n2. 'போகாதே'",
         Telugu: "💧 విషాద గీతాలు:\n1. 'మనసే ಕవ్వించే'\n2. 'శ్రీవల్లి' (Sad)",
         Malayalam: "💧 ദുഃഖ ഗാനങ്ങൾ:\n1. 'പൂമുത്തോലെ'\n2. 'സീൻ കോൺട്രാ'",
@@ -165,7 +177,7 @@ const THEME_DATA: Record<string, Record<Language, string>> = {
         English: "🕺 Party Non-Stop:\n1. 'Uptown Funk' - Bruno Mars\n2. 'Levitating' - Dua Lipa",
         Hindi: "🕺 पार्टी के गाने:\n1. 'Kar Gayi Chull'\n2. 'Saturday Saturday'",
         Kannada: "🕺 ಪಾರ್ಟಿ ಹಾಡುಗಳು:\n1. 'ಟಗರು ಬಂತು'\n2. 'ಓಪನ್ ಹೇರ್ ಡೋಲಿ'",
-        Marathi: "🕺 पार्टीसाठी गाणी:\n1. 'झिंगाट'\n2. 'शांताबाई'",
+        Marathi: "🕺 ಪಾರ್ಟಿಗಾಗಿ ಗಾಣಿ:\n1. 'ಝಿಂಗಾಟ್'\n2. 'ಶಾಂತಾಬಾಯಿ'",
         Tamil: "🕺 பார்ட்டி பாடல்கள்:\n1. 'அரபிக் குத்து'\n2. 'வாத்தி கமிங்'",
         Telugu: "🕺 పార్టీ సాంగ్స్:\n1. 'ఊ అంటావా'\n2. 'రాములో రాములా'",
         Malayalam: "🕺 പാർട്ടി ഗാനങ്ങൾ:\n1. 'കുടുക്ക്'\n2. 'ചിന്നമ്മ'",
@@ -253,11 +265,11 @@ function App() {
 
         // Theme keyword map
         const themeKeywords: Record<string, string[]> = {
-            love: ['love', 'romantic', 'காதல்', 'ಪ್ರೇಮ', 'പ്രണയം', 'ಪ್ರೀತಿ', 'प्रेम', 'ਪਿਆਰ', 'ভালোবাসা', 'પ્રેમ'],
-            sad: ['sad', 'emotional', 'சோகம்', 'விஷாదం', 'ವಿಷಾദം', 'ದುಃಖ', 'दुख', 'ਉਦਾਸ', 'দুঃখ', 'દુઃખ'],
+            love: ['love', 'romantic', 'காதல்', 'ಪ್ರೇಮ', 'ಪ್ರಣയം', 'ಪ್ರೀತಿ', 'प्रेम', 'ਪਿਆਰ', 'ভালোবাসা', 'પ્રેમ'],
+            sad: ['sad', 'emotional', 'சோகம்', 'விஷாடம்', 'விಷாடம்', 'ದುಃಖ', 'दुख', 'ਉਦਾਸ', 'দুঃখ', 'દુઃખ'],
             party: ['party', 'dance', 'பார்ட்டி', 'పార్టీ', 'പാർട്ടി', 'ಪಾರ್ಟಿ', 'ನಾಚ', 'ਪਾਰਟੀ', 'পার্টি', 'પાર્ટી'],
-            rap: ['rap', 'hip hop', 'ರಾಪ್', 'ರಾಪರ್'],
-            happy: ['happy', 'joy', 'சந்தோஷம்', 'ಸంతోಷಂ', 'ಸಂತೋಷ', 'आनंद', 'ਖੁਸ਼ੀ', 'আনন্দ', 'આનંદ']
+            rap: ['rap', 'hip hop', 'ರಾಪ್', 'ರಾಪರ್', 'ರ್ಯಾಪ್'],
+            happy: ['happy', 'joy', 'சந்தோஷம்', 'சంతోஷம்', 'ಸಂತೋಷ', 'आनಂದ', 'ਖੁਸ਼ੀ', 'আনন্দ', 'આનંદ']
         };
 
         // Detect themes in query
@@ -265,12 +277,11 @@ function App() {
             .filter(([_, keywords]) => keywords.some(k => q.includes(k)))
             .map(([theme]) => theme);
 
-        // ADVANCED SEARCH LOGIC: Match by aliases and native scripts
-        const detectedArtist = Object.values(SEARCH_DATA_STRUCTURED)
-            .find(artist =>
-                artist.name.toLowerCase().includes(q) ||
-                artist.aliases.some(alias => q.includes(alias.toLowerCase()))
-            );
+        // ROBUST SEARCH LOGIC: Match by aliases and native scripts correctly
+        const detectedArtist = SEARCH_DATA_STRUCTURED.find(artist =>
+            q.includes(artist.name.toLowerCase()) ||
+            artist.aliases.some(alias => q.includes(alias.toLowerCase()))
+        );
 
         if (detectedArtist) {
             let filteredSongs = detectedArtist.songs;
@@ -287,7 +298,7 @@ function App() {
                 return `🕺 Top ${themeStr}tracks by ${detectedArtist.name}:\n${songList}`;
             } else {
                 return `I found ${detectedArtist.name}, but couldn't find specific ${detectedThemes.join('/')} tracks. Here are some of their hits instead:\n` +
-                    detectedArtist.songs.slice(0, 5).map((s, i) => `${i + 1}. '${s.name}'`).join('\n');
+                    detectedArtist.songs.slice(0, 8).map((s, i) => `${i + 1}. '${s.name}'`).join('\n');
             }
         }
 
@@ -298,12 +309,12 @@ function App() {
         }
 
         // Greetings
-        if (q.includes('hello') || q.includes('hi') || q.includes('வணக்கம்') || q.includes('ನಮಸ್ಕಾರ') || q.includes('ನಮಸ್ಕಾರ') || q.includes('ನಮಸ್ತೆ')) {
+        if (q.includes('hello') || q.includes('hi') || q.includes('வணக்கம்') || q.includes('ನಮಸ್ಕಾರ') || q.includes('ನಮಸ್ತೆ') || q.includes('ಹಲೋ')) {
             return BOT_KNOWLEDGE[lang];
         }
 
         return lang === 'English' ? `Searching for "${query}" in our library... Try asking for 'Dr. Rajkumar songs', 'ಜೊತೆಯಲಿ', or 'Diljit Dosanjh hits'!` :
-            lang === 'Kannada' ? `ನಿಮ್ಮ ಪಸಂದಿನ "${query}" ಹುಡುಕುತ್ತಿದ್ದೇನೆ! ಡಾ. ರಾಜ್ಕುಮಾರ್, ಪುನೀತ್ ಅಥವಾ ಯಶ್ ಅವರ ಹಾಡುಗಳ ಬಗ್ಗೆ ಕೇಳಿ!` :
+            lang === 'Kannada' ? `ನಿಮ್ಮ ಪಸಂದಿನ "${query}" ಹುಡುಕುತ್ತಿದ್ದೇನೆ! ಡಾ. ರಾಜ್ಕುಮಾರ್, ವಿಷ್ಣುವರ್ಧನ್ ಅಥವಾ ಪುನೀತ್ ಅವರ ಹಾಡುಗಳ ಬಗ್ಗೆ ಕೇಳಿ!` :
                 `Checking for "${query}"... Try searching for actors, singers, genres or albums!`;
     };
 
