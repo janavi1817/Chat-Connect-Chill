@@ -1,12 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Music, Send, Loader2, Globe, Music2, Disc, Star, Zap, Heart, CloudRain, PartyPopper, Smile } from 'lucide-react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Music, Send, Loader2, Globe, Music2, Disc, Star, Zap, Heart, CloudRain, PartyPopper, Smile, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Message {
     id: string;
     text: string;
     sender: 'user' | 'bot';
-    timestamp: Date;
 }
 
 type Language = 'English' | 'Hindi' | 'Kannada' | 'Marathi' | 'Tamil' | 'Telugu' | 'Malayalam' | 'Punjabi' | 'Bengali' | 'Gujarati';
@@ -17,11 +16,31 @@ const BOT_KNOWLEDGE: Record<Language, string> = {
     Kannada: "ನಾನು ನಿಮ್ಮ AI ಸಂಗೀತ ಮಾಂತ್ರಿಕ. ನೇರಳೆ ಬಣ್ಣದಲ್ಲಿ ಸಂಗೀತದ ಜಗತ್ತನ್ನು ಅನ್ವೇಷಿಸಿ!",
     Marathi: "मी तुमचा मी संगीताचा जादुई मदतनीस आहे. जांभळ्या ರಂಗಾತ್ ಸಂಗೀತಾಚೆ ಜಗ್ ಶೋಧಾ!",
     Tamil: "நான் உங்கள் AI சாட் கனெக்ட் சில். ஊதா நிறத்தில் இசை உலகை ஆராயுங்கள்!",
-    Telugu: "నేను మీ AI చాట్ కనెక్ಟ್ చిಲ್. ఊదా రంగులో సంగీత ప్రపంచాన్ని ಅನ್ವೇಷಿಸಿ!",
+    Telugu: "నేను మీ AI చాట్ కనెక్ట్ చిల్. ఊదా రంగులో సంగీత ప్రపంచాన్ని ಅನ್ವೇಷಿಸಿ!",
     Malayalam: "ഞാൻ നിങ്ങളുടെ AI ചാറ്റ് കണക്ട് ചില്ല് ആണ്. പർപ്പിൾ നിറത്തിൽ സംഗീത ലോകം പര്യവേಕ್ಷണം ചെയ്യുക!",
-    Punjabi: "ਮੈਂ ਤੁਹਾਡਾ ਏਆਈ ਮਿਊਜ਼ਿਕ ਉਸਤਾਦ ਹਾਂ। ਜਾਮਨੀ ರੰਗ ਵਿੱਚ ਸੰਗੀਤ ਦੀ ದੁನಿਆ ਦੀ ਖੋਜ ਕਰੋ!",
+    Punjabi: "ਮੈਂ ਤੁਹਾਡਾ ਏਆਈ ਮਿਊਜ਼ਿਕ ਉਸਤਾਦ ਹਾਂ। ਜਾਮਨੀ ਰੰਗ ਵਿੱਚ ਸੰਗੀਤ ਦੀ ਦੁਨੀਆ ਦੀ ਖੋਜ ਕਰੋ!",
     Bengali: "আমি আপনার এআই মিউজিক ওস্তাদ। বেগুনি রঙে সঙ্গীতের জগত অন্বেষণ করুন!",
-    Gujarati: "હું તમારો AI મ્યુઝિક ઉસ્તાદ છું. જાંબલી રંગમાં સંગીતની દુનિયા શોધો!"
+    Gujarati: "હું તમારો AI મ્યુਜ਼િક ઉસ્તાਦ છું. જાંબલી રંગમાં સંગીતની દુનિયા શોધો!"
+};
+
+const LOCALIZED_TEMPLATES = {
+    found_songs: {
+        English: "🕺 Top tracks by {artist}:",
+        Kannada: "🕺 {artist} ಅವರ ಪ್ರಮುಖ ಹಾಡುಗಳು ಇಲ್ಲಿವೆ:",
+        Hindi: "🕺 {artist} के बेहतरीन गाने:",
+        Tamil: "🕺 {artist} இன் சிறந்த பாடல்கள்:",
+        Telugu: "🕺 {artist} యొక్క ప్రసిద్ధ పాటలు:",
+        Marathi: "🕺 {artist} यांची लोकप्रिय गाणी:",
+        Malayalam: "🕺 {artist} -ന്റെ മികച്ച ഗാനങ്ങൾ:",
+        Punjabi: "🕺 {artist} ਦੇ ਚੋਟੀ ਦੇ ਗੀਤ:",
+        Bengali: "🕺 {artist}-এর সেরা গান:",
+        Gujarati: "🕺 {artist} ના શ્રેષ્ઠ ગીતો:"
+    },
+    searching: {
+        English: "Searching for \"{query}\" in our library...",
+        Kannada: "\"{query}\" ಗಾಗಿ ನಮ್ಮ ಸಂಗೀತ ಲೈಬ್ರರಿಯಲ್ಲಿ ಹುಡುಕುತ್ತಿದ್ದೇನೆ...",
+        Hindi: "आपकी पसंद \"{query}\" खोजी जा रही है..."
+    }
 };
 
 interface Song {
@@ -36,7 +55,7 @@ interface ArtistEntry {
 }
 
 const SEARCH_DATA_STRUCTURED: ArtistEntry[] = [
-    // KANNADA - LEGENDS & STARS
+    // KANNADA - LEGENDS (MASSIVE DATASET)
     {
         name: "Dr. Rajkumar",
         aliases: ['ರಾಜ್ಕುಮಾರ್', 'ಡಾ. ರಾಜ್ಕುಮಾರ್', 'ಅಣ್ಣಾವ್ರು', 'rajkumar', 'dr rajkumar', 'anaavru', 'raj kumar'],
@@ -44,11 +63,54 @@ const SEARCH_DATA_STRUCTURED: ArtistEntry[] = [
             { name: "Huttidare Kannada Naadalli Huttabeku", theme: ["spirit", "happy"] },
             { name: "Nooru Kannu Saladu", theme: ["love", "classic"] },
             { name: "If You Come Today", theme: ["funny", "happy"] },
-            { name: "Ellelli Nodali Chinnada", theme: ["love"] },
+            { name: "Ellelli Nodali", theme: ["love"] },
+            { name: "Chinnada Mallige Hoove", theme: ["love"] },
+            { name: "Baani Gondu Elle", theme: ["philosophical"] },
+            { name: "Hrudayadali Idenidhu", theme: ["love"] },
+            { name: "Naa Ninna Mareyalare", theme: ["love"] },
+            { name: "Thanuvu Manavu", theme: ["love"] },
+            { name: "Nagunagutha Nee Baruve", theme: ["happy"] },
+            { name: "Yare Koogadali Oore Horaadali", theme: ["energy"] },
+            { name: "Ninna Nanna", theme: ["love"] },
+            { name: "Thai Thai Bangari", theme: ["folk"] },
+            { name: "Muthinantha Mathondu", theme: ["philosophical"] },
+            { name: "Sangeethave Nee Nudiyuna Maathella", theme: ["art"] },
             { name: "Yaaru Thiliyaru Ninna", theme: ["spiritual"] },
+            { name: "Nannaseyaa Hoove", theme: ["love"] },
+            { name: "Love Me Or Hate Me", theme: ["happy"] },
+            { name: "Beladingalaagi Baa", theme: ["love"] },
+            { name: "Ninna Kangala", theme: ["love"] },
+            { name: "My Name Is Raj", theme: ["happy"] },
+            { name: "Jagave Ondu Ranaranga", theme: ["philosophical"] },
+            { name: "Cheluveya Nota Chenna", theme: ["love"] },
+            { name: "Koodi Balona", theme: ["happy"] },
+            { name: "Chinna Baalalli", theme: ["classic"] }
+        ]
+    },
+    {
+        name: "S. Janaki",
+        aliases: ['ಎಸ್ ಜಾನಕಿ', 's janaki', 'janaki amma'],
+        songs: [
             { name: "Naguva Nayana", theme: ["love"] },
+            { name: "Ellelli Nodali", theme: ["love"] },
+            { name: "Chinnada Malligalli", theme: ["love"] },
+            { name: "Yaaru Neenu Endhu Nanna", theme: ["happy"] },
+            { name: "Baani Gondu Elle", theme: ["philosophical"] },
+            { name: "Poojisalende Hoovagide", theme: ["devotional"] },
             { name: "Onde Ondu Maatu", theme: ["love"] },
-            { name: "Aadisi Nodu", theme: ["philosophical"] }
+            { name: "Gaganavu Yello", theme: ["nature"] },
+            { name: "Ninna Kangala", theme: ["love"] }
+        ]
+    },
+    {
+        name: "Shankar Nag",
+        aliases: ['ಶಂಕರ್ ನಾಗ್', 'shankar nag', 'karate raja'],
+        songs: [
+            { name: "Santoshakke", theme: ["party", "happy"] },
+            { name: "Jotheyali ಜೊತೆಯಲಿ", theme: ["love"] },
+            { name: "Namma Shaale", theme: ["nostalgia"] },
+            { name: "Raja Nanna Raja", theme: ["happy"] },
+            { name: "Geluvina Geethe", theme: ["energy"] }
         ]
     },
     {
@@ -58,7 +120,8 @@ const SEARCH_DATA_STRUCTURED: ArtistEntry[] = [
             { name: "Noorentu Nomeglallu", theme: ["love"] },
             { name: "Haalu Jenu", theme: ["love"] },
             { name: "Snehada Kadalalli", theme: ["love", "friendship"] },
-            { name: "Veenavaani", theme: ["classical"] }
+            { name: "Veenavaani", theme: ["classical"] },
+            { name: "Anandavenu Anuraagavenu", theme: ["happy"] }
         ]
     },
     {
@@ -69,16 +132,9 @@ const SEARCH_DATA_STRUCTURED: ArtistEntry[] = [
             { name: "Tagaru Banthu", theme: ["party", "energy"] },
             { name: "Bombe Helutaithe", theme: ["sad", "classic"] },
             { name: "Appu Dance", theme: ["party"] },
-            { name: "Neene Rajakumara", theme: ["love"] }
-        ]
-    },
-    {
-        name: "Shankar Nag",
-        aliases: ['ಶಂಕರ್ ನಾಗ್', 'shankar nag', 'karate raja'],
-        songs: [
-            { name: "Santoshakke", theme: ["party", "happy"] },
-            { name: "Jotheyali ಜೊತೆಯಲಿ", theme: ["love"] },
-            { name: "Namma Shaale", theme: ["nostalgia"] }
+            { name: "Neene Rajakumara", theme: ["love"] },
+            { name: "Power Star", theme: ["energy"] },
+            { name: "Geleya Geleya", theme: ["friendship"] }
         ]
     },
     {
@@ -88,62 +144,20 @@ const SEARCH_DATA_STRUCTURED: ArtistEntry[] = [
             { name: "Salaam Rocky Bhai", theme: ["energy", "party"] },
             { name: "Mehabooba", theme: ["love"] },
             { name: "Sulthana", theme: ["energy"] },
-            { name: "Dheera Dheera", theme: ["energy"] }
-        ]
-    },
-    {
-        name: "P. B. Sreenivas",
-        aliases: ['ಪಿ ಬಿ ಶ್ರೀನಿವಾಸ್', 'p b sreenivas', 'pbs'],
-        songs: [
-            { name: "Aadisi Nodu", theme: ["philosophical"] },
-            { name: "Nooru Kannu Saladu", theme: ["love"] }
-        ]
-    },
-    {
-        name: "S. P. Balasubrahmanyam",
-        aliases: ['ಎಸ್ ಪಿ ಬಾಲಸುಬ್ರಹ್ಮಣ್ಯಂ', 'spb', 's p balasubrahmanyam'],
-        songs: [
-            { name: "Jotheyali", theme: ["love"] },
-            { name: "Maate Mantramu", theme: ["love"] },
-            { name: "Enna Satham", theme: ["love"] }
+            { name: "Dheera Dheera", theme: ["energy"] },
+            { name: "Yasho Maarga", theme: ["energy"] }
         ]
     },
     // HINDI
     {
         name: "Arijit Singh",
-        aliases: ['अरिजीत सिंह', 'arijit'],
+        aliases: ['अरिजीत सिंह', 'arijit', 'অরিজিৎ সিং'],
         songs: [
             { name: "Tum Hi Ho", theme: ["love"] },
             { name: "Channa Mereya", theme: ["sad"] },
-            { name: "Nashe Si Chadh Gayi", theme: ["party"] }
-        ]
-    },
-    {
-        name: "Kishore Kumar",
-        aliases: ['किशोर कुमार', 'kishore da', 'kishore kumar'],
-        songs: [
-            { name: "Hamen Tumse Pyar Kitna", theme: ["love"] },
-            { name: "Zindagi Ek Safar", theme: ["happy"] },
-            { name: "Aaj Ei Dintake", theme: ["happy"] }
-        ]
-    },
-    // PUNJABI
-    {
-        name: "Diljit Dosanjh",
-        aliases: ['ਦਿਲਜੀਤ ਦੋਸਾਂਝ', 'diljit', 'dosanjh'],
-        songs: [
-            { name: "Proper Patola", theme: ["party"] },
-            { name: "Lover", theme: ["love"] },
-            { name: "G.O.A.T.", theme: ["rap"] }
-        ]
-    },
-    {
-        name: "Sidhu Moose Wala",
-        aliases: ['ਸਿੱਧੂ ਮੂਸੇ ਵਾਲਾ', 'sidhu', 'moosewala'],
-        songs: [
-            { name: "295", theme: ["rap"] },
-            { name: "The Last Ride", theme: ["rap"] },
-            { name: "Levels", theme: ["rap"] }
+            { name: "Nashe Si Chadh Gayi", theme: ["party"] },
+            { name: "Kesariya", theme: ["love"] },
+            { name: "O Maahi", theme: ["love"] }
         ]
     }
 ];
@@ -151,39 +165,13 @@ const SEARCH_DATA_STRUCTURED: ArtistEntry[] = [
 const THEME_DATA: Record<string, Record<Language, string>> = {
     love: {
         English: "💖 Love & Romantic Anthems:\n1. 'Perfect' - Ed Sheeran\n2. 'All of Me' - John Legend",
-        Hindi: "💖 रोमांटिक नगमे:\n1. 'Tum Hi Ho' - Arijit Singh\n2. 'Lag Jaa Gale' - Lata Mangeshkar",
         Kannada: "💖 ಪ್ರೇಮ ಗೀತೆಗಳು:\n1. 'ಬೆಳಗೆದ್ದು' - ಕಿರಿಕ್ ಪಾರ್ಟಿ\n2. 'ನೀನೇ ರಾಜಕುಮಾರ' - ಪುನೀತ್ ರಾಜಕುಮಾರ್",
-        Marathi: "💖 प्रेमगीते:\n1. 'झिंगಾಟ್' (Love edit)\n2. 'ದಿವ ತುಝೆ ಕಿತಿ'",
-        Tamil: "💖 காதல் பாடல்கள்:\n1. 'கண்ணான கண்ணே'\n2. 'முன்பே வா'",
-        Telugu: "💖 ప్రేమ గీతాలు:\n1. 'సమాజవరగమన'\n2. 'ఇంకేం ఇంకేం'",
-        Malayalam: "💖 പ്രണയ ഗാനങ്ങൾ:\n1. 'മലരേ'\n2. 'ഉയിരേ'",
-        Punjabi: "💖 ਪਿਆਰ ਦੇ ਗੀਤ:\n1. 'ਕਸੂਰ'\n2. 'ਤੇਰੇ ਰੰਗ ਵਰਗਾ'",
-        Bengali: "💖 ভালোবাসার গান:\n1. 'আমি তোমার হতে চাই'\n2. 'তোমাকে'",
-        Gujarati: "💖 પ્રેમ ગીતો:\n1. 'વ્હાલમ આવો ને'\n2. 'તારા વિના શ્યામ'"
-    },
-    sad: {
-        English: "💧 Soul-Stirring Sad Songs:\n1. 'Someone Like You' - Adele\n2. 'Fix You' - Coldplay",
-        Hindi: "💧 दर्द भरे नगमे:\n1. 'Channa Mereya' - Arjit Singh\n2. 'Agar Tum Saath Ho'",
-        Kannada: "💧 ವಿಷಾದದ ಗೀತೆಗಳು:\n1. 'ಅನಿಸುತಿದೆ' - ಮುಂಗಾರು ಮಳೆ",
-        Marathi: "💧 दुःखದ ಗಾಪಿ:\n1. 'येಳಕೋಟ್' - ಸೈರಾಟ್",
-        Tamil: "💧 சோகமான பாடல்கள்:\n1. 'ஏனோ ஏனோ'\n2. 'போகாதே'",
-        Telugu: "💧 విషాద గీతాలు:\n1. 'మనసే ಕవ్వించే'\n2. 'శ్రీవల్లి' (Sad)",
-        Malayalam: "💧 ദുഃഖ ഗാനങ്ങൾ:\n1. 'പൂമുത്തോലെ'\n2. 'സീൻ കോൺട്രാ'",
-        Punjabi: "💧 ਉਦਾਸ ਗੀਤ:\n1. 'ਚੰਨ ਵਿੱਛੜ ਗਿਆ'",
-        Bengali: "💧 বিরহের গান:\n1. 'নিশি রাত'",
-        Gujarati: "💧 દુઃખદ ગીતો:\n1. 'તારક મહેતા' (Sad theme)"
+        Hindi: "💖 रोमांटिक नगमे:\n1. 'Tum Hi Ho' - Arijit Singh\n2. 'Lag Jaa Gale' - Lata Mangeshkar"
     },
     party: {
         English: "🕺 Party Non-Stop:\n1. 'Uptown Funk' - Bruno Mars\n2. 'Levitating' - Dua Lipa",
-        Hindi: "🕺 पार्टी के गाने:\n1. 'Kar Gayi Chull'\n2. 'Saturday Saturday'",
         Kannada: "🕺 ಪಾರ್ಟಿ ಹಾಡುಗಳು:\n1. 'ಟಗರು ಬಂತು'\n2. 'ಓಪನ್ ಹೇರ್ ಡೋಲಿ'",
-        Marathi: "🕺 ಪಾರ್ಟಿಗಾಗಿ ಗಾಣಿ:\n1. 'ಝಿಂಗಾಟ್'\n2. 'ಶಾಂತಾಬಾಯಿ'",
-        Tamil: "🕺 பார்ட்டி பாடல்கள்:\n1. 'அரபிக் குத்து'\n2. 'வாத்தி கமிங்'",
-        Telugu: "🕺 పార్టీ సాంగ్స్:\n1. 'ఊ అంటావా'\n2. 'రాములో రాములా'",
-        Malayalam: "🕺 പാർട്ടി ഗാനങ്ങൾ:\n1. 'കുടുക്ക്'\n2. 'ചിന്നമ്മ'",
-        Punjabi: "🕺 ਪਾਰਟੀ ਗੀਤ:\n1. 'ਪਰਾਪਰ ਪਟੋਲਾ'",
-        Bengali: "🕺 পার্টি গান:\n1. 'টুম্পা'",
-        Gujarati: "🕺 પાર્ટી ગીતો:\n1. 'લેરી લાલા'"
+        Hindi: "🕺 पार्टी के गाने:\n1. 'Kar Gayi Chull'\n2. 'Saturday Saturday'"
     }
 };
 
@@ -213,17 +201,15 @@ const MusicBackground = () => {
 
 function App() {
     const [messages, setMessages] = useState<Message[]>([
-        {
-            id: '1',
-            text: BOT_KNOWLEDGE['English'],
-            sender: 'bot',
-            timestamp: new Date()
-        }
+        { id: '1', text: BOT_KNOWLEDGE['English'], sender: 'bot' }
     ]);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
     const [currentLang, setCurrentLang] = useState<Language>('English');
+    const [isListening, setIsListening] = useState(false);
+    const [isSpeaking, setIsSpeaking] = useState(true);
     const chatEndRef = useRef<HTMLDivElement>(null);
+    const recognitionRef = useRef<any>(null);
 
     const scrollToBottom = () => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -233,30 +219,72 @@ function App() {
         scrollToBottom();
     }, [messages, isTyping]);
 
-    const handleSend = async () => {
-        if (!input.trim()) return;
+    // SPEECH SYNTHESIS (TTS)
+    const speak = useCallback((text: string) => {
+        if (!isSpeaking) return;
+        const synth = window.speechSynthesis;
+        const utter = new SpeechSynthesisUtterance(text);
 
-        const userMsg: Message = {
-            id: Date.now().toString(),
-            text: input,
-            sender: 'user',
-            timestamp: new Date()
+        // Map language to voice
+        const langMap: Record<Language, string> = {
+            English: 'en-US', Hindi: 'hi-IN', Kannada: 'kn-IN', Marathi: 'mr-IN',
+            Tamil: 'ta-IN', Telugu: 'te-IN', Malayalam: 'ml-IN', Punjabi: 'pa-IN',
+            Bengali: 'bn-IN', Gujarati: 'gu-IN'
         };
+        utter.lang = langMap[currentLang] || 'en-US';
+        synth.speak(utter);
+    }, [isSpeaking, currentLang]);
 
+    // SPEECH RECOGNITION (STT)
+    useEffect(() => {
+        const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            recognitionRef.current = new SpeechRecognition();
+            recognitionRef.current.continuous = false;
+            recognitionRef.current.interimResults = false;
+
+            recognitionRef.current.onresult = (event: any) => {
+                const transcript = event.results[0][0].transcript;
+                setInput(transcript);
+                setIsListening(false);
+                handleSend(transcript);
+            };
+
+            recognitionRef.current.onend = () => setIsListening(false);
+            recognitionRef.current.onerror = () => setIsListening(false);
+        }
+    }, [currentLang]);
+
+    const toggleListening = () => {
+        if (isListening) {
+            recognitionRef.current?.stop();
+        } else {
+            const langMap: Record<Language, string> = {
+                English: 'en-US', Hindi: 'hi-IN', Kannada: 'kn-IN', Marathi: 'mr-IN',
+                Tamil: 'ta-IN', Telugu: 'te-IN', Malayalam: 'ml-IN', Punjabi: 'pa-IN',
+                Bengali: 'bn-IN', Gujarati: 'gu-IN'
+            };
+            recognitionRef.current.lang = langMap[currentLang];
+            recognitionRef.current?.start();
+            setIsListening(true);
+        }
+    };
+
+    const handleSend = async (customInput?: string) => {
+        const textToSend = customInput || input;
+        if (!textToSend.trim()) return;
+
+        const userMsg: Message = { id: Date.now().toString(), text: textToSend, sender: 'user' };
         setMessages(prev => [...prev, userMsg]);
         setInput('');
         setIsTyping(true);
 
         setTimeout(() => {
-            const botResponse = generateResponse(input, currentLang);
-            const botMsg: Message = {
-                id: (Date.now() + 1).toString(),
-                text: botResponse,
-                sender: 'bot',
-                timestamp: new Date()
-            };
+            const botResponse = generateResponse(textToSend, currentLang);
+            const botMsg: Message = { id: (Date.now() + 1).toString(), text: botResponse, sender: 'bot' };
             setMessages(prev => [...prev, botMsg]);
             setIsTyping(false);
+            speak(botResponse);
         }, 1500);
     };
 
@@ -265,19 +293,17 @@ function App() {
 
         // Theme keyword map
         const themeKeywords: Record<string, string[]> = {
-            love: ['love', 'romantic', 'காதல்', 'ಪ್ರೇಮ', 'ಪ್ರಣയം', 'ಪ್ರೀತಿ', 'प्रेम', 'ਪਿਆਰ', 'ভালোবাসা', 'પ્રેમ'],
-            sad: ['sad', 'emotional', 'சோகம்', 'விஷாடம்', 'விಷாடம்', 'ದುಃಖ', 'दुख', 'ਉਦਾਸ', 'দুঃখ', 'દુઃખ'],
-            party: ['party', 'dance', 'பார்ட்டி', 'పార్టీ', 'പാർട്ടി', 'ಪಾರ್ಟಿ', 'ನಾಚ', 'ਪਾਰਟੀ', 'পার্টি', 'પાર્ટી'],
+            love: ['love', 'romantic', 'காதல்', 'ಪ್ರೇಮ', 'ಪ್ರಣಯಂ', 'ಪ್ರೀತಿ', 'प्रेम', 'ਪਿਆਰ', 'ভালোবাসা', 'પ્રેમ'],
+            sad: ['sad', 'emotional', 'சோகம்', 'ವಿಷಾದ', 'ವಿಷಾಡಂ', 'ದುಃಖ', 'दुख', 'ਉਦਾਸ', 'দুঃখ', 'દુઃખ'],
+            party: ['party', 'dance', 'பார்ட்டಿ', 'పార్టీ', 'പാർട്ടി', 'ಪಾರ್ಟಿ', 'ನಾಚ', 'ਪਾਰਟੀ', 'পার্টি', 'પાર્ટી'],
             rap: ['rap', 'hip hop', 'ರಾಪ್', 'ರಾಪರ್', 'ರ್ಯಾಪ್'],
-            happy: ['happy', 'joy', 'சந்தோஷம்', 'சంతోஷம்', 'ಸಂತೋಷ', 'आनಂದ', 'ਖੁਸ਼ੀ', 'আনন্দ', 'આનંદ']
+            happy: ['happy', 'joy', 'சந்தோஷம்', 'ಸಂತೋಷಂ', 'ಸಂತೋಷ', 'आनंद', 'ਖੁਸ਼ੀ', 'আনন্দ', 'આનંદ']
         };
 
-        // Detect themes in query
         const detectedThemes = Object.entries(themeKeywords)
             .filter(([_, keywords]) => keywords.some(k => q.includes(k)))
             .map(([theme]) => theme);
 
-        // ROBUST SEARCH LOGIC: Match by aliases and native scripts correctly
         const detectedArtist = SEARCH_DATA_STRUCTURED.find(artist =>
             q.includes(artist.name.toLowerCase()) ||
             artist.aliases.some(alias => q.includes(alias.toLowerCase()))
@@ -285,31 +311,29 @@ function App() {
 
         if (detectedArtist) {
             let filteredSongs = detectedArtist.songs;
-
             if (detectedThemes.length > 0) {
                 filteredSongs = detectedArtist.songs.filter(s =>
                     s.theme.some(t => detectedThemes.includes(t))
                 );
             }
 
+            const header = LOCALIZED_TEMPLATES.found_songs[lang]?.replace('{artist}', detectedArtist.name) ||
+                `🕺 Top tracks by ${detectedArtist.name}:`;
+
             if (filteredSongs.length > 0) {
                 const songList = filteredSongs.map((s, i) => `${i + 1}. '${s.name}'`).join('\n');
-                const themeStr = detectedThemes.length > 0 ? `${detectedThemes.join(' & ')} ` : '';
-                return `🕺 Top ${themeStr}tracks by ${detectedArtist.name}:\n${songList}`;
+                return `${header}\n${songList}`;
             } else {
-                return `I found ${detectedArtist.name}, but couldn't find specific ${detectedThemes.join('/')} tracks. Here are some of their hits instead:\n` +
-                    detectedArtist.songs.slice(0, 8).map((s, i) => `${i + 1}. '${s.name}'`).join('\n');
+                return `${header}\n` + detectedArtist.songs.slice(0, 15).map((s, i) => `${i + 1}. '${s.name}'`).join('\n');
             }
         }
 
-        // Generic Theme Search
         if (detectedThemes.length > 0) {
             const primaryTheme = detectedThemes[0];
             return THEME_DATA[primaryTheme][lang] || THEME_DATA[primaryTheme]['English'];
         }
 
-        // Greetings
-        if (q.includes('hello') || q.includes('hi') || q.includes('வணக்கம்') || q.includes('ನಮಸ್ಕಾರ') || q.includes('ನಮಸ್ತೆ') || q.includes('ಹಲೋ')) {
+        if (q.includes('hello') || q.includes('hi') || q.includes('ನಮಸ್ಕಾರ') || q.includes('ನಮಸ್ತೆ') || q.includes('ಹಲೋ')) {
             return BOT_KNOWLEDGE[lang];
         }
 
@@ -320,13 +344,9 @@ function App() {
 
     const changeLanguage = (lang: Language) => {
         setCurrentLang(lang);
-        const welcomeMsg: Message = {
-            id: Date.now().toString(),
-            text: BOT_KNOWLEDGE[lang],
-            sender: 'bot',
-            timestamp: new Date()
-        };
+        const welcomeMsg: Message = { id: Date.now().toString(), text: BOT_KNOWLEDGE[lang], sender: 'bot' };
         setMessages(prev => [...prev, welcomeMsg]);
+        speak(BOT_KNOWLEDGE[lang]);
     };
 
     return (
@@ -338,18 +358,27 @@ function App() {
                     <Music size={32} className="logo-icon" />
                     <h1>Chat Connect Chill</h1>
                 </div>
-                <div className="language-selector">
-                    <Globe size={18} style={{ marginRight: '8px', color: '#A78BFA' }} />
-                    <div className="lang-buttons-grid">
-                        {LANGUAGES.map(lang => (
-                            <button
-                                key={lang}
-                                className={`lang-btn ${currentLang === lang ? 'active' : ''}`}
-                                onClick={() => changeLanguage(lang)}
-                            >
-                                {lang}
-                            </button>
-                        ))}
+                <div className="header-controls">
+                    <button
+                        className={`action-btn ${isSpeaking ? 'active' : ''}`}
+                        onClick={() => setIsSpeaking(!isSpeaking)}
+                        title={isSpeaking ? "Mute Bot" : "Unmute Bot"}
+                    >
+                        {isSpeaking ? <Volume2 size={20} /> : <VolumeX size={20} />}
+                    </button>
+                    <div className="language-selector">
+                        <Globe size={18} style={{ marginRight: '8px', color: '#A78BFA' }} />
+                        <div className="lang-buttons-grid">
+                            {LANGUAGES.map(lang => (
+                                <button
+                                    key={lang}
+                                    className={`lang-btn ${currentLang === lang ? 'active' : ''}`}
+                                    onClick={() => changeLanguage(lang)}
+                                >
+                                    {lang}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </header>
@@ -362,14 +391,12 @@ function App() {
                             initial={{ opacity: 0, y: 20, scale: 0.95 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.8 }}
-                            transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                             className={`message ${msg.sender}`}
                         >
                             <div className="msg-icon" style={{ marginBottom: '8px', opacity: 0.7 }}>
                                 {msg.sender === 'bot' ? <Music2 size={16} /> : <Zap size={16} />}
                             </div>
                             <div className="msg-text">{msg.text}</div>
-                            <div className="msg-time">{msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
                         </motion.div>
                     ))}
                 </AnimatePresence>
@@ -387,17 +414,23 @@ function App() {
 
             <footer className="input-area">
                 <div className="input-container">
+                    <button
+                        className={`voice-btn ${isListening ? 'listening' : ''}`}
+                        onClick={toggleListening}
+                    >
+                        {isListening ? <MicOff size={20} className="text-red-400" /> : <Mic size={20} />}
+                    </button>
                     <input
                         type="text"
                         className="chat-input"
-                        placeholder={`Ask about songs in ${currentLang}...`}
+                        placeholder={`Ask in ${currentLang}...`}
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                     />
                     <button
                         className="send-btn"
-                        onClick={handleSend}
+                        onClick={() => handleSend()}
                         disabled={!input.trim() || isTyping}
                     >
                         {isTyping ? <Loader2 className="animate-spin" size={20} /> : <Send size={20} />}
