@@ -110,11 +110,17 @@ body {
 
 .lang-buttons-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     gap: 0.4rem;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1000px) {
+    .lang-buttons-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 800px) {
     .lang-buttons-grid {
         grid-template-columns: repeat(3, 1fr);
     }
